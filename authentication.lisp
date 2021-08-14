@@ -7,11 +7,12 @@
 (in-package #:org.shirakumo.fraf.modio)
 
 (defun complete-authentication (client data)
-  (setf (access-token client) (gethash data "access_token"))
+  (setf (access-token client) (gethash "access_token"  data))
   client)
 
 (define-endpoint authenticate/terms (service)
-  (request :service service))
+  (let ((data (request :service service)))
+    (values (gethash "plaintext" data) data)))
 
 (define-endpoint (authenticate/email-request "oauth/emailrequest") (email)
   (request :email email))

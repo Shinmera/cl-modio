@@ -4,7 +4,4 @@
  Author: Nicolas Hafner <shinmera@tymoon.eu>
 |#
 
-(defpackage #:org.shirakumo.fraf.modio
-  (:use #:cl)
-  (:export)
-  (:shadow #:mod))
+(in-package #:org.shirakumo.fraf.modio)
