@@ -26,8 +26,7 @@
   (api-access :parameter "api_access_options" :bitfield api-access-options-id)
   (maturity :parameter "maturity_options" :bitfield maturity-options-id))
 
-(define-endpoint (games/get (format NIL "games/~a" (id id))) (id)
-  (fill-object-from-data 'game (request)))
+(define-edit-endpoint :get (games/get game "games/~a" game))
 
 (define-edit-endpoint :put (games/edit game "games/~a" game)
   (status :update status-id)

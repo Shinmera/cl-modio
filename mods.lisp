@@ -25,8 +25,7 @@
   metadata-kvp
   tags)
 
-(define-endpoint (games/mods/get (format NIL "games/~a/mods/~a" (id game) (id mod))) (game mod)
-  (fill-object-from-data 'mod (request)))
+(define-edit-endpoint :get (games/mods/get mod "games/~a/mods/~a" game mod))
 
 (define-edit-endpoint :post (games/mods/add mod "games/~a/mods" game)
   (name :required T)

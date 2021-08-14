@@ -19,8 +19,7 @@
   changelog
   metadata-blob)
 
-(define-endpoint (games/mods/files/get (format NIL "games/~a/mods/~a/files/~a" (id game) (id mod) (id file))) (game mod file)
-  (fill-object-from-data 'modfile (request)))
+(define-edit-endpoint :get (games/mods/files/get modfile "games/~a/mods/~a/files/~a" game mod file))
 
 (define-edit-endpoint :post (games/mods/files/add modfile "games/~a/mods/~a/files" game mod)
   (filedata :required T)
