@@ -104,27 +104,31 @@
    (platform :initarg :platform :initform (detect-platform) :accessor platform)
    (portal :initarg :portal :initform (detect-portal) :accessor portal)
    (wait-until :initarg :wait-until :initform NIL :accessor wait-until)
+   (valid-until :initarg :valid-until :initform NIL :accessor valid-until)
    (on-rate-limit :initarg :on-rate-limit :initform :sleep :accessor on-rate-limit)))
 
 (defmethod print-object ((client client) stream)
   (print-unreadable-object (client stream :type T)
-    (format stream "~a ~@[RATE LIMITED FOR ~ds~]"
-            (or (access-token client) (api-key client))
+    (format stream "~:[UNAUTHENTICATED~;AUTHENTICATED~]~@[ UNTIL ~a~]~@[ RATE LIMITED FOR ~ds~]"
+            (api-key client)
+            (when (valid-until client) (format-time (valid-until client)))
             (when (wait-until client) (- (wait-until client) (get-universal-time))))))
 
 (defmethod make-load-form ((client client) &optional env)
   (declare (ignore env))
   `(make-instance ',(type-of client)
                   :api-key ,(api-key client)
+                  :valid-until ,(valid-until client)
                   :access-token ,(access-token client)
                   :language ,(language client)))
 
 (defmethod extract-user-properties ((client client))
-  (list (access-token client) (language client)))
+  (list (access-token client) (valid-until client) (language client)))
 
 (defmethod restore-user-properties ((client client) properties)
-  (destructuring-bind (access-token language) properties
+  (destructuring-bind (access-token valid-until language) properties
     (setf (access-token client) access-token)
+    (setf (valid-until client) valid-until)
     (setf (language client) language)
     client))
 

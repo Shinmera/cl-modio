@@ -37,6 +37,10 @@
 (defun expiry-timestamp (&optional (time (get-universal-time)))
   (+ time 31536000))
 
+(defun format-time (time)
+  (multiple-value-bind (s m h dd mm yy) (decode-universal-time time 0)
+    (format NIL "~4,'0d.~2,'0d.~2,'0d ~2,'0d:~2,'0d:~2,'0d" yy mm dd h m s)))
+
 (defmacro define-print-method (class format &rest args)
   `(defmethod print-object ((,class ,class) stream)
      (print-unreadable-object (,class stream :type T)
