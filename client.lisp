@@ -133,6 +133,8 @@
     (pathname val)
     ((eql NIL) "false")
     ((eql T) "true")
+    ((eql :false) "false")
+    ((eql :true) "true")
     (symbol (string-downcase val))
     (ratio (princ-to-string (float val)))
     (real (princ-to-string val))
