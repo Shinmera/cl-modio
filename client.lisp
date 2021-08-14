@@ -6,6 +6,7 @@
 
 (in-package #:org.shirakumo.fraf.modio)
 
+(defvar *debug* NIL)
 (defvar *base-url* "https://api.mod.io/v1/")
 
 (define-condition modio-condition (condition)
@@ -68,14 +69,16 @@
   ())
 
 (defun direct-request (endpoint &key (method :get) parameters headers)
-  (multiple-value-bind (stream status headers) (drakma:http-request
-                                                (format NIL "~a~a" *base-url* endpoint)
-                                                :method method
-                                                :want-stream T
-                                                :external-format-in :utf-8
-                                                :external-format-out :utf-8
-                                                :parameters parameters
-                                                :additional-headers headers)
+  (multiple-value-bind (stream status headers)
+      (let ((drakma:*header-stream* (if *debug* *error-output*)))
+        (drakma:http-request
+         (format NIL "~a~a" *base-url* endpoint)
+         :method method
+         :want-stream T
+         :external-format-in :utf-8
+         :external-format-out :utf-8
+         :parameters parameters
+         :additional-headers headers))
     (flet ((handle-error (type)
              (let ((data (ignore-errors (yason:parse stream))))
                (error type :endpoint endpoint
