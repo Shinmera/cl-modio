@@ -37,6 +37,14 @@
 (defun expiry-timestamp (&optional (time (get-universal-time)))
   (+ time 31536000))
 
+(defmacro define-print-method (class format &rest args)
+  `(defmethod print-object ((,class ,class) stream)
+     (print-unreadable-object (,class stream :type T)
+       (format stream ,format ,@(loop for arg in args
+                                      collect (etypecase arg
+                                                (symbol `(,arg ,class))
+                                                (cons arg)))))))
+
 (defun to-parameter-name (key)
   (flet ((key-char (char)
            (case char
@@ -230,7 +238,9 @@
 (defun tabkey (&rest parameters)
   (lambda (k)
     (loop for (key param) on parameters by #'cddr
-          collect key collect (gethash param k))))
+          for val = (gethash param k '#1=#:none)
+          unless (eq val '#1#) collect key
+          unless (eq val '#1#) collect val)))
 
 (defstruct (filter (:constructor %make-filter (comparator value &optional (invert NIL)))
                    (:copier NIL)

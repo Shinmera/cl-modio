@@ -6,13 +6,30 @@
 
 (in-package #:org.shirakumo.fraf.modio)
 
-(define-parsable-class avatar ()
+(defclass unique-resource ()
+  ((id :accessor id)))
+
+(define-print-method unique-resource "@~a" id)
+
+(defclass named-resource ()
+  ((name :accessor name)
+   (name-id :accessor name-id)))
+
+(define-print-method named-resource "~a" (or (name-id named-resource) (name named-resource)))
+
+(define-parsable-class image ()
   (filename
    original
-   (thumbnails :parameter NIL :tabkey (50 "thumb_50x50"
-                                       100 "thumb_100x100"))))
+   (thumnbails :parameter NIL :tabkey (50 "thumb_50x50"
+                                          64 "thumb_64x64"
+                                          100 "thumb_100x100"
+                                          128 "thumb_128x128"
+                                          256 "thumb_256x256"
+                                          320 "thumb_320x180"
+                                          640 "thumb_640x360"
+                                          1280 "thumb_1280x720"))))
 
-(define-parsable-class comment ()
+(define-parsable-class comment (unique-resource)
   (id
    mod-id
    (user :nest user)
@@ -26,7 +43,7 @@
   (binary-url
    (date-expires :key universal-timestamp)))
 
-(define-parsable-class game ()
+(define-parsable-class game (named-resource unique-resource)
   (id
    (status :key id-status)
    (submitted-by :nest user)
@@ -41,9 +58,9 @@
    (api-access :parameter "api_access_options" :key id-api-access-options)
    (maturity :parameter "maturity_options" :key id-maturity-options)
    ugc-name
-   (icon :nest icon)
-   (logo :nest logo)
-   (header :nest header)
+   (icon :nest image)
+   (logo :nest image)
+   (header :nest image)
    name
    name-id
    summary
@@ -62,7 +79,7 @@
    (subscribers :parameter "mods_subscribers_total")
    (date-expires :key universal-timestamp)))
 
-(define-parsable-class game-tag-option ()
+(define-parsable-class game-tag-option (named-resource)
   (name
    (tag-type :parameter "type" :key id-game-tag-type)
    tags
@@ -70,38 +87,15 @@
    hidden
    locked))
 
-(define-parsable-class header ()
-  (filename
-   original))
-
-(define-parsable-class icon ()
-  (filename
-   original
-   (thumnbails :parameter NIL :tabkey (64 "thumb_64x64"
-                                       128 "thumb_128x128"
-                                       256 "thumb_256x256"))))
-
-(define-parsable-class image ()
-  (filename
-   original
-   (thumnbails :parameter NIL :tabkey (320 "thumb_320x180"))))
-
-(define-parsable-class logo ()
-  (filename
-   original
-   (thumbnails :parameter NIL :tabkey (320 "thumb_320x180"
-                                       640 "thumb_640x360"
-                                       1280 "thumb_1280x720"))))
-
 (defmethod fill-object-from-data ((message (eql 'message)) data)
   (gethash "message" data))
 
-(define-parsable-class mod-dependency ()
+(define-parsable-class mod-dependency (named-resource)
   (mod-id
    name
    (date-added :key universal-timestamp)))
 
-(define-parsable-class mod-event ()
+(define-parsable-class mod-event (unique-resource)
   (id
    mod-id
    user-id
@@ -113,7 +107,7 @@
    (sketchfab-urls :parameter "sketchfab")
    (images :nest image)))
 
-(define-parsable-class mod ()
+(define-parsable-class mod (named-resource unique-resource)
   (id
    game-id
    (status :key id-status)
@@ -123,7 +117,7 @@
    (date-updated :key universal-timestamp)
    (date-live :key universal-timestamp)
    (maturity :parameter "maturity_options" :key id-maturity-options)
-   (logo :nest logo)
+   (logo :nest image)
    homepage-url
    name
    name-id
@@ -152,11 +146,11 @@
                                    :aggregate "ratings_weighted_aggregate"
                                    :text "ratings_display_text"))))
 
-(define-parsable-class mod-tag ()
+(define-parsable-class mod-tag (named-resource)
   (name
    (date-added :key universal-timestamp)))
 
-(define-parsable-class modfile ()
+(define-parsable-class modfile (unique-resource)
   (id
    mod-id
    (date-added :key universal-timestamp)
@@ -186,7 +180,7 @@
    (title :parameter "position")
    (invite :parameter "invite_pending" :key id-invite)))
 
-(define-parsable-class user-event ()
+(define-parsable-class user-event (unique-resource)
   (id
    game-id
    mod-id
@@ -194,11 +188,11 @@
    (date-added :key universal-timestamp)
    (event-type :key id-event-type)))
 
-(define-parsable-class user ()
+(define-parsable-class user (named-resource unique-resource)
   (id
+   (name :parameter "username")
    name-id
-   username
    (display-name :parameter "display_name_portal")
    (last-online :parameter "date_online" :key universal-timestamp)
-   (avatar :nest avatar)
+   (avatar :nest image)
    profile-url))
