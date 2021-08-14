@@ -44,15 +44,16 @@
              (T (char-downcase char)))))
     (map 'string #'key-char (string key))))
 
-(defun unlist (listish)
-  (if (listp listish)
-      (first listish)
-      listish))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun unlist (listish)
+    (if (listp listish)
+        (first listish)
+        listish))
 
-(defun enlist (listish &rest defaults)
-  (if (listp listish)
-      listish
-      (list* listish defaults)))
+  (defun enlist (listish &rest defaults)
+    (if (listp listish)
+        listish
+        (list* listish defaults))))
 
 (defgeneric fill-object-from-data (object data))
 
@@ -150,6 +151,7 @@
 
 (define-id-map rating
   ((:good :positive) +1)
+  ((:none NIL) 0)
   ((:bad :negative) -1))
 
 (define-id-map event-type
@@ -180,6 +182,21 @@
 (define-id-map invite
   (:accepted 0)
   (:pending 1))
+
+(define-id-map resource-type
+  (:game "games")
+  (:mod "mods")
+  (:file "files"))
+
+(define-id-map report-type
+  (:generic 0)
+  (:dmca 1)
+  (:not-working 2)
+  (:rude-content 3)
+  (:illegal-content 4)
+  (:stolen-content 5)
+  (:false-information 6)
+  (:other 7))
 
 (define-id-group level
   (:moderator 1)

@@ -108,11 +108,12 @@
 
 (defmethod print-object ((client client) stream)
   (print-unreadable-object (client stream :type T)
-    (format stream "~a ~@[RATE LIMITED FOR ~ds]"
+    (format stream "~a ~@[RATE LIMITED FOR ~ds~]"
             (or (access-token client) (api-key client))
             (when (wait-until client) (- (wait-until client) (get-universal-time))))))
 
-(defmethod make-load-form ((client client))
+(defmethod make-load-form ((client client) &optional env)
+  (declare (ignore env))
   `(make-instance ',(type-of client)
                   :api-key ,(api-key client)
                   :access-token ,(access-token client)

@@ -34,7 +34,9 @@
                (:file "general")
                (:file "reports")
                (:file "documentation"))
-  :depends-on (:yason
+  :depends-on (:alexandria
+               :zippy
+               :yason
                :cl-ppcre
                :drakma
                :documentation-utils

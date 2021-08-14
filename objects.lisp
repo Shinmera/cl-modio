@@ -93,6 +93,9 @@
                                        640 "thumb_640x360"
                                        1280 "thumb_1280x720"))))
 
+(defmethod fill-object-from-data ((message (eql 'message)) data)
+  (gethash "message" data))
+
 (define-parsable-class mod-dependency ()
   (mod-id
    name
