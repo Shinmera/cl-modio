@@ -82,7 +82,7 @@
     (flet ((handle-error (type)
              (let ((data (ignore-errors (yason:parse stream))))
                (error type :endpoint endpoint
-                           :arguments args
+                           :arguments parameters
                            :error-code (if data (gethash "error_ref" data) status)
                            :message (when data (gethash "message" data))))))
       (case status
@@ -156,7 +156,7 @@
 (defun process-parameters (parameters)
   (loop for (key val) on parameters by #'cddr
         when val
-        collect (cons (to-parameter-name val) (process-parameter-value val))))
+        collect (cons (to-parameter-name key) (process-parameter-value val))))
 
 (defun process-filter (filter)
   (flet ((inner (filter)
