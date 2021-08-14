@@ -69,36 +69,43 @@
   ())
 
 (defun direct-request (endpoint &key (method :get) parameters headers)
-  (multiple-value-bind (stream status headers)
-      (let ((drakma:*header-stream* (if *debug* *error-output*)))
-        (drakma:http-request
-         (format NIL "~a~a" *base-url* endpoint)
-         :method method
-         :want-stream T
-         :external-format-in :utf-8
-         :external-format-out :utf-8
-         :parameters parameters
-         :additional-headers headers))
-    (flet ((handle-error (type)
-             (let ((data (ignore-errors (yason:parse stream))))
-               (error type :endpoint endpoint
-                           :arguments parameters
-                           :error-code (if data (gethash "error_ref" data) status)
-                           :message (when data (gethash "message" data))))))
-      (case status
-        ((200 201 204)
-         (values (if (= 204 status) T (yason:parse stream))
-                 (cdr (assoc :location headers))
-                 (cdr (assoc :x-ratelimit-retryafter headers))))
-        (400 (handle-error 'bad-request))
-        (401 (handle-error 'invalid-access-key))
-        ((402 403) (handle-error 'permission-denied))
-        (404 (handle-error 'resource-not-found))
-        (409 (handle-error 'resource-already-exists))
-        (429 (handle-error 'too-many-requests))
-        (500 (handle-error 'server-error))
-        (503 (handle-error 'service-unavailable))
-        (T (handle-error 'request-error))))))
+  (restart-case
+      (multiple-value-bind (stream status headers)
+          (let ((drakma:*header-stream* (if *debug* *error-output*)))
+            (drakma:http-request
+             (format NIL "~a~a" *base-url* endpoint)
+             :method method
+             :want-stream T
+             :external-format-in :utf-8
+             :external-format-out :utf-8
+             :parameters parameters
+             :additional-headers headers))
+        (flet ((handle-error (type)
+                 (let ((data (ignore-errors (yason:parse stream))))
+                   (error type :endpoint endpoint
+                               :arguments parameters
+                               :error-code (if data (gethash "error_ref" data) status)
+                               :message (when data (gethash "message" data))))))
+          (case status
+            ((200 201 204)
+             (values (if (= 204 status) T (yason:parse stream))
+                     (cdr (assoc :location headers))
+                     (cdr (assoc :x-ratelimit-retryafter headers))))
+            (400 (handle-error 'bad-request))
+            (401 (handle-error 'invalid-access-key))
+            ((402 403) (handle-error 'permission-denied))
+            (404 (handle-error 'resource-not-found))
+            (409 (handle-error 'resource-already-exists))
+            (429 (handle-error 'too-many-requests))
+            (500 (handle-error 'server-error))
+            (503 (handle-error 'service-unavailable))
+            (T (handle-error 'request-error)))))
+    (retry ()
+      :report "Retry the request."
+      (direct-request endpoint :method method :parameters parameters :headers headers))
+    (use-value (&rest values)
+      :report "Return the provided values instead."
+      (values-list values))))
 
 (defclass client ()
   ((api-key :initarg :api-key :initform NIL :accessor api-key)
