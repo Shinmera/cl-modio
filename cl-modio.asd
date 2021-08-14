@@ -35,6 +35,7 @@
                (:file "reports")
                (:file "documentation"))
   :depends-on (:alexandria
+               :uiop
                :zippy
                :yason
                :cl-ppcre

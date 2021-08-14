@@ -52,6 +52,26 @@
              (T (char-downcase char)))))
     (map 'string #'key-char (string key))))
 
+(defun tempdir ()
+  (pathname
+   (format NIL "~a/"
+           #+windows
+           (or (uiop:getenv "TEMP")
+               "~/AppData/Local/Temp")
+           #+darwin
+           (or (uiop:getenv "TMPDIR")
+               "/tmp")
+           #+linux
+           (or (uiop:getenv "XDG_RUNTIME_DIR")
+               "/tmp")
+           #-(or windows darwin linux)
+           "/tmp")))
+
+(defun make-temp-file (&key (name (format NIL "modio-~a-~3,'0d" (get-universal-time) (random 1000))) type)
+  (make-pathname :name name
+                 :type type
+                 :defaults (tempdir)))
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun unlist (listish)
     (if (listp listish)
