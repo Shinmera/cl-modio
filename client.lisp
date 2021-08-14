@@ -12,11 +12,12 @@
   ())
 
 (define-condition request-error (error modio-condition)
-  ((request :initarg :request :initform (error "REQUEST required.") :reader request)
+  ((endpoint :initarg :endpoint :initform (error "ENDPOINT required.") :reader endpoint)
+   (arguments :initarg :arguments :initform () :reader arguments)
    (error-code :initarg :error-code :initform NIL :reader error-code)
    (message :initarg :message :initform NIL :reader message))
-  (:report (lambda (c s) (format s "The request failed (~a~@[, error-code ~a~])~@[:~%  ~a~]"
-                                 (type-of c) (error-code c) (message c)))))
+  (:report (lambda (c s) (format s "The request to ~a failed (~a~@[, error-code ~a~])~@[:~%  ~a~]"
+                                 (endpoint c) (type-of c) (error-code c) (message c)))))
 
 (define-condition bad-request (request-error)
   ())
@@ -76,7 +77,8 @@
                                                       args)
     (flet ((handle-error (type)
              (let ((data (ignore-errors (yason:parse stream))))
-               (error type :request (list* endpoint args)
+               (error type :endpoint endpoint
+                           :arguments args
                            :error-code (if data (gethash "error_ref" data) status)
                            :message (when data (gethash "message" data))))))
       (case status
@@ -135,7 +137,7 @@
              (=
               (list* NIL (rest filter)))
              (find
-              (list "in" (second filter) (format NIL "~{~a~,~}" (third filter))))
+              (list "in" (second filter) (format NIL "~{~a~^,~}" (third filter))))
              (search
               (list* "_q" (rest filter)))
              (equal

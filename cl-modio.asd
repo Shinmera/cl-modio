@@ -15,6 +15,7 @@
   :components ((:file "package")
                (:file "toolkit")
                (:file "client")
+               (:file "authentication")
                (:file "documentation"))
   :depends-on (:yason
                :cl-ppcre
