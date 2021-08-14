@@ -21,6 +21,7 @@
 
 (define-edit-endpoint :get (games/mods/files/get modfile "games/~a/mods/~a/files/~a" game mod file))
 
+;; TODO: auto-zip if pathname is a folder, etc.
 (define-edit-endpoint :post (games/mods/files/add modfile "games/~a/mods/~a/files" game mod)
   (filedata :required T)
   version
