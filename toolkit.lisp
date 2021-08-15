@@ -92,9 +92,6 @@
 (defmethod fill-object-from-data ((name symbol) data)
   (fill-object-from-data (make-instance name) data))
 
-(defun transformer (type)
-  (lambda (v) (fill-object-from-data type v)))
-
 (defmacro define-parsable-class (name superclasses slots &rest options)
   (labels ((compile-slot-definition (slot)
              (destructuring-bind (name &key (initarg (intern (string name) "KEYWORD"))

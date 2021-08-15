@@ -7,7 +7,7 @@
 (in-package #:org.shirakumo.fraf.modio)
 
 (define-endpoint me ()
-  (fill-object-from-data 'user (request)))
+  (cache-object client 'user (request)))
 
 (define-list-endpoint* (me/subscribed mod)
   (mod :parameter :id :update id)

@@ -26,7 +26,7 @@
   (labels ((call (filedata)
              (let ((data (request :filedata filedata :version version :changelog changelog
                                   :active active :filehash file-hash :metadata-blob metadata-blob)))
-               (fill-object-from-data 'modfile data)))
+               (cache-object client 'modfile data)))
            (zip (file)
              (let ((temp (make-temp-file :type "zip")))
                (org.shirakumo.zippy:compress-zip file temp)

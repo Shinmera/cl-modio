@@ -15,6 +15,7 @@
   :components ((:file "package")
                (:file "toolkit")
                (:file "client")
+               (:file "cache")
                (:file "objects")
                (:file "authentication")
                (:file "me")

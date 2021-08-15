@@ -7,6 +7,7 @@
 (in-package #:org.shirakumo.fraf.modio)
 
 (defvar *debug* NIL)
+(defvar *client* NIL)
 (defvar *base-url* "https://api.mod.io/v1/")
 
 (define-condition modio-condition (condition)
@@ -115,7 +116,8 @@
    (portal :initarg :portal :initform (detect-portal) :accessor portal)
    (wait-until :initarg :wait-until :initform NIL :accessor wait-until)
    (valid-until :initarg :valid-until :initform NIL :accessor valid-until)
-   (on-rate-limit :initarg :on-rate-limit :initform :sleep :accessor on-rate-limit)))
+   (on-rate-limit :initarg :on-rate-limit :initform :sleep :accessor on-rate-limit)
+   (cache :initform (make-cache) :accessor cache)))
 
 (defmethod print-object ((client client) stream)
   (print-unreadable-object (client stream :type T)
@@ -256,7 +258,7 @@
   (unless (find '&key args)
     (setf args (append args '(&key))))
   (destructuring-bind (name &optional (endpoint name) (method :get)) (if (listp name) name (list name))
-    `(defun ,name (client ,@args on-rate-limit)
+    `(defmethod ,name ((client client) ,@args on-rate-limit)
        (flet ((request (&rest parameters)
                 (request client ,(if (listp endpoint) endpoint (string-downcase endpoint))
                          :on-rate-limit on-rate-limit
@@ -268,7 +270,7 @@
   (unless (find '&key args)
     (setf args (append args '(&key))))
   (destructuring-bind (name &optional (endpoint name)) (if (listp name) name (list name))
-    `(defun ,name (client ,@args (collect-results T) key on-rate-limit start end per-page sort)
+    `(defmethod ,name ((client client) ,@args (collect-results T) key on-rate-limit start end per-page sort)
        (flet ((request (inner-key &rest keyargs)
                 (request-list client ,(if (listp endpoint) endpoint (string-downcase endpoint))
                               :on-rate-limit on-rate-limit
@@ -291,7 +293,7 @@
                                      `(format NIL ,endpoint ,@(loop for arg in rargs collect `(id ,arg)))
                                      name))
        (,@rargs &key ,@(mapcar #'unlist args))
-     (request (transformer ',result-type)
+     (request (lambda (v) (cache-object client ',result-type v))
               ,@(loop for (name . kargs) in (mapcar #'enlist args)
                       collect (or (getf kargs :parameter) (intern (string name) "KEYWORD"))
                       collect (destructuring-bind (&key key update bitfield &allow-other-keys) kargs
@@ -320,5 +322,5 @@
                                                 (when update (setf form `(@ ,update ,form)))
                                                 form))))))
          ,(if result-type
-              `(fill-object-from-data ',result-type data)
+              `(cache-object client ',result-type data)
               'data)))))
