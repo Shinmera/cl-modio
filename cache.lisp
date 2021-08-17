@@ -33,13 +33,16 @@
 (defmethod cache-object ((cache cache) type data)
   (let ((id (gethash "id" data)))
     (if id
-        (let ((cached (cached (gethash id (cache-objects cache)))))
+        (let ((cached (gethash id (cache-objects cache))))
           (cond (cached
                  (fill-object-from-data cached data))
                 (T
                  (setf cached (fill-object-from-data type data))
                  (setf (gethash id (cache-objects cache)) cached))))
         (fill-object-from-data type data))))
+
+(defmethod cache-listing ((cache cache) query list)
+  (setf (gethash query (cache-lists cache)) list))
 
 (defmethod games/get ((cache cache) (id integer))
   (gethash id (cache-objects cache)))
@@ -60,6 +63,9 @@
 
 (defmethod cache-object ((client client) type data)
   (cache-object (cache client) type data))
+
+(defmethod cache-listing ((client client) query list)
+  (cache-listing (cache client) query list))
 
 (defmethod games/get :around ((client client) (id integer) &key ignore-cache)
   (or (unless ignore-cache

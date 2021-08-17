@@ -269,21 +269,25 @@
 (defmacro define-list-endpoint (name args &body body)
   (unless (find '&key args)
     (setf args (append args '(&key))))
+  (setf args (append args '(ignore-cache)))
   (destructuring-bind (name &optional (endpoint name)) (if (listp name) name (list name))
     `(defmethod ,name ((client client) ,@args (collect-results T) key on-rate-limit start end per-page sort)
        (flet ((request (inner-key &rest keyargs)
-                (request-list client ,(if (listp endpoint) endpoint (string-downcase endpoint))
-                              :on-rate-limit on-rate-limit
-                              :collect-results collect-results
-                              :start start
-                              :end end
-                              :per-page per-page
-                              :key (if key
-                                       (lambda (v)
-                                         (funcall key (funcall inner-key v)))
-                                       inner-key)
-                              :sort sort
-                              :filter (filter-from-keywords keyargs))))
+                (let* ((endpoint ,(if (listp endpoint) endpoint (string-downcase endpoint)))
+                       (filter (filter-from-keywords keyargs))
+                       (query (list endpoint start end sort filter)))
+                  (request-list client endpoint
+                                :on-rate-limit on-rate-limit
+                                :collect-results collect-results
+                                :start start
+                                :end end
+                                :per-page per-page
+                                :key (if key
+                                         (lambda (v)
+                                           (funcall key (funcall inner-key v)))
+                                         inner-key)
+                                :sort sort
+                                :filter filter))))
          (macrolet ((@ (updater value)
                         `(update-value ,value #',updater)))
            ,@body)))))
