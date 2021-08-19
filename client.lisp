@@ -117,7 +117,8 @@
    (wait-until :initarg :wait-until :initform NIL :accessor wait-until)
    (valid-until :initarg :valid-until :initform NIL :accessor valid-until)
    (on-rate-limit :initarg :on-rate-limit :initform :sleep :accessor on-rate-limit)
-   (cache :initform (make-cache) :accessor cache)))
+   (cache :initform (make-cache) :accessor cache)
+   (default-game-id :initarg :default-game-id :initform 0 :accessor default-game-id)))
 
 (defmethod print-object ((client client) stream)
   (print-unreadable-object (client stream :type T)
@@ -132,7 +133,8 @@
                   :api-key ,(api-key client)
                   :valid-until ,(valid-until client)
                   :access-token ,(access-token client)
-                  :language ,(language client)))
+                  :language ,(language client)
+                  :default-game-id ,(default-game-id client)))
 
 (defmethod extract-user-properties ((client client))
   (list (access-token client) (valid-until client) (language client)))

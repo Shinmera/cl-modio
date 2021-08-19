@@ -39,6 +39,13 @@
    karma
    content))
 
+(defmethod mod ((thing comment))
+  (mods/get *client* (default-game-id *client*) (mod-id thing)))
+
+(defmethod reply ((thing comment))
+  (when (reply-id thing)
+    (games/mods/comments/get *client* (default-game-id *client*) (mod-id thing) (reply-id thing))))
+
 (define-parsable-class download ()
   (binary-url
    (date-expires :key universal-timestamp)))
@@ -79,6 +86,9 @@
    (subscribers :parameter "mods_subscribers_total")
    (date-expires :key universal-timestamp)))
 
+(defmethod game ((thing game-stats))
+  (games/get *client* (game-id game-stats)))
+
 (define-parsable-class game-tag-option (named-resource)
   (name
    (tag-type :parameter "type" :key id-game-tag-type)
@@ -95,12 +105,18 @@
    name
    (date-added :key universal-timestamp)))
 
+(defmethod mod ((thing mod-dependency))
+  (mods/get *client* (default-game-id *client*) (mod-id thing)))
+
 (define-parsable-class mod-event (unique-resource)
   (id
    mod-id
    user-id
    (date-added :key universal-timestamp)
    (event-type :key id-event-type)))
+
+(defmethod mod ((thing mod-event))
+  (mods/get *client* (default-game-id *client*) (mod-id thing)))
 
 (define-parsable-class mod-media ()
   ((youtube-urls :parameter "youtube")
@@ -131,6 +147,9 @@
    (metadata :parameter "metadata_kvp" :key extract-metadata)
    (tags :nest mod-tag)))
 
+(defmethod game ((mod mod))
+  (games/get *client* (game-id mod)))
+
 (define-parsable-class mod-stats ()
   (mod-id
    (date-expires :key universal-timestamp)
@@ -145,6 +164,9 @@
                                    :percentage "ratings_percentage_positive"
                                    :aggregate "ratings_weighted_aggregate"
                                    :text "ratings_display_text"))))
+
+(defmethod mod ((thing mod-stats))
+  (mods/get *client* (default-game-id *client*) (mod-id thing)))
 
 (define-parsable-class mod-tag (named-resource)
   (name
@@ -166,11 +188,20 @@
    metadata-blob
    (download :nest download)))
 
+(defmethod mod ((thing modfile))
+  (mods/get *client* (default-game-id *client*) (mod-id thing)))
+
 (define-parsable-class rating ()
   (game-id
    mod-id
    (rating :key id-rating)
    (date-added :key universal-timestamp)))
+
+(defmethod game ((thing rating))
+  (games/get *client* (game-id thing)))
+
+(defmethod mod ((thing rating))
+  (mods/get *client* (default-game-id *client*) (mod-id thing)))
 
 (define-parsable-class team-member ()
   (id
@@ -187,6 +218,12 @@
    user-id
    (date-added :key universal-timestamp)
    (event-type :key id-event-type)))
+
+(defmethod game ((thing user-event))
+  (games/get *client* (game-id thing)))
+
+(defmethod mod ((thing user-event))
+  (mods/get *client* (default-game-id *client*) (mod-id thing)))
 
 (define-parsable-class user (named-resource unique-resource)
   (id
