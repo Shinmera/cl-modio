@@ -276,18 +276,27 @@
                 (let* ((endpoint ,(if (listp endpoint) endpoint (string-downcase endpoint)))
                        (filter (filter-from-keywords keyargs))
                        (query (list endpoint start end sort filter)))
-                  (request-list client endpoint
-                                :on-rate-limit on-rate-limit
-                                :collect-results collect-results
-                                :start start
-                                :end end
-                                :per-page per-page
-                                :key (if key
-                                         (lambda (v)
-                                           (funcall key (funcall inner-key v)))
-                                         inner-key)
-                                :sort sort
-                                :filter filter))))
+                  ;; KLUDGE: we could only achieve a cleaner cache integration interface
+                  ;;         if we cached the raw data payload instead, which is not great.
+                  (multiple-value-bind (cache cache-hit) (get-listing client query)
+                    (unless cache-hit
+                      (let ((results (request-list client endpoint
+                                                   :on-rate-limit on-rate-limit
+                                                   :collect-results collect-results
+                                                   :start start
+                                                   :end end
+                                                   :per-page per-page
+                                                   :key inner-key
+                                                   :sort sort
+                                                   :filter filter)))
+                        (cache-listing client query results)
+                        (setf cache results)))
+                    (cond ((null key)
+                           cache)
+                          ((null collect-results)
+                           (map NIL key cache))
+                          (T
+                           (mapcar key cache)))))))
          (macrolet ((@ (updater value)
                         `(update-value ,value #',updater)))
            ,@body)))))

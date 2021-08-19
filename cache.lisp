@@ -11,7 +11,7 @@
             (:copier NIL)
             (:predicate NIL))
   (objects (make-hash-table :test 'eql))
-  (lists (make-hash-table :test 'equal)))
+  (lists (make-hash-table :test 'equalp)))
 
 (defgeneric valid-p (object))
 
@@ -44,6 +44,9 @@
 (defmethod cache-listing ((cache cache) query list)
   (setf (gethash query (cache-lists cache)) list))
 
+(defmethod get-listing ((cache cache) query)
+  (gethash query (cache-lists cache)))
+
 (defmethod games/get ((cache cache) (id integer))
   (gethash id (cache-objects cache)))
 
@@ -66,6 +69,9 @@
 
 (defmethod cache-listing ((client client) query list)
   (cache-listing (cache client) query list))
+
+(defmethod get-listing ((client client) query)
+  (get-listing (cache client) query))
 
 (defmethod games/get :around ((client client) (id integer) &key ignore-cache)
   (or (unless ignore-cache
