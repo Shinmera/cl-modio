@@ -191,6 +191,54 @@
 (defmethod mod ((thing modfile))
   (mods/get *client* (default-game-id *client*) (mod-id thing)))
 
+(defmethod download-modfile ((file modfile) target &key (if-exists :supersede))
+  (let* ((download (download file))
+         (target (merge-pathnames target (file-name file)))
+         (input (request *client* (binary-url download) :parse NIL))
+         (buffer (make-array 4096 :element-type '(unsigned-byte 8)))
+         (total 0))
+    (declare (dynamic-extent buffer))
+    (unwind-protect
+         (with-open-file (output target :direction :output
+                                        :element-type '(unsigned-byte 8)
+                                        :if-exists if-exists)
+           (when output
+             (unwind-protect
+                  (loop for read = (read-sequence buffer input)
+                        until (= 0 read)
+                        do (write-sequence buffer output)
+                           (incf total read))
+               (when (/= total (file-size file))
+                 (cerror "Ignore the discrepancy." "File size not as expected!")))
+             target))
+      (close input))))
+
+(defmethod extract-modfile ((file modfile) target &key (if-no-cache :download)
+                                                       (if-exists :replace))
+  (let ((cache (make-pathname :name (id modfile)
+                              :type "zip"
+                              :defaults (modfile-cache-directory *client*))))
+    (when (or (not (probe-file cache))
+              (< (file-write-date cache) (date-added file)))
+      (ecase if-no-cache
+        (:download
+         (download-modfile file cache))
+        (:error
+         (error "No cache file."))
+        ((NIL)
+         (return-from extract-modfile NIL))))
+    (when (probe-file target)
+      (ecase if-exists
+        (:supersede)
+        (:replace
+         (delete-directory target :recursive T))
+        (:error
+         (error "Target exists."))
+        ((NIL)
+         (return-from extract-modfile NIL))))
+    (ensure-directories-exist target)
+    (org.shirakumo.zippy:extract-zip cache target :if-exists :supersede)))
+
 (define-parsable-class rating ()
   (game-id
    mod-id

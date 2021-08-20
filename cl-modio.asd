@@ -34,6 +34,7 @@
                (:file "teams")
                (:file "general")
                (:file "reports")
+               (:file "simple")
                (:file "documentation"))
   :depends-on (:alexandria
                :uiop

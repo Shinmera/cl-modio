@@ -69,7 +69,7 @@
 (define-condition service-unavailable (request-error)
   ())
 
-(defun direct-request (endpoint &key (method :get) parameters headers)
+(defun direct-request (endpoint &key (method :get) parameters headers (parse T))
   (restart-case
       (multiple-value-bind (stream status headers)
           (let ((drakma:*header-stream* (if *debug* *error-output*)))
@@ -89,7 +89,14 @@
                                :message (when data (gethash "message" data))))))
           (case status
             ((200 201 204)
-             (values (if (= 204 status) T (yason:parse stream))
+             (values (cond ((= 204 status)
+                            T)
+                           (parse
+                            (unwind-protect
+                                 (yason:parse stream)
+                              (close stream)))
+                           (T
+                            stream))
                      (cdr (assoc :location headers))
                      (cdr (assoc :x-ratelimit-retryafter headers))))
             (400 (handle-error 'bad-request))
@@ -202,7 +209,7 @@
                         (:desc (format NIL "-~a" (process-parameter-value sort))))))
       (list "_sort" (prcoess-parameter-value sort))))
 
-(defmethod request ((client client) endpoint &key on-rate-limit parameters (method :get))
+(defmethod request ((client client) endpoint &key on-rate-limit parameters (method :get) (parse T))
   (when (wait-until client)
     (etypecase (or on-rate-limit (on-rate-limit client))
       ((eql :return)
@@ -225,7 +232,8 @@
                                       :x-modio-portal (portal client)))
                       :parameters (process-parameters
                                    (list* :api-key (api-key client)
-                                          parameters)))
+                                          parameters))
+                      :parse parse)
     (when retry-after
       (setf (wait-until client) (+ (get-universal-time) retry-after)))
     (values data location)))
