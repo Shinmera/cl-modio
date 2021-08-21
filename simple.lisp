@@ -86,7 +86,10 @@
       (destructuring-bind (mod-id &key file-id version &allow-other-keys) entry
         (ecase if-does-not-exist
           (:create
-           (extract-modfile (find-modfile client mod-id :file-id file-id :version version) client))
+           (let ((file (find-modfile client mod-id :file-id file-id :version version)))
+             (extract-modfile file client)
+             (push (normalize-modlist-entry (list mod-id :file-id (id file) :version (version file) :active T))
+                   local)))
           (:error
            (cerror "Ignore the missing mod" "Mod is not present locally."))
           ((NIL)))))
