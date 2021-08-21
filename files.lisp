@@ -53,3 +53,59 @@
   metadata-blob)
 
 (define-edit-endpoint :delete (games/mods/files/edit NIL "games/~a/mods/~a/files/~a" game mod file))
+
+(defmethod download-modfile ((file modfile) target &key (if-exists :supersede)
+                                                        (if-does-not-exist :create))
+  (let* ((download (download file))
+         (target (merge-pathnames target (file-name file))))
+    (flet ((download ()
+             (with-open-stream (input (request *client* (binary-url download) :parse NIL))
+               (let ((buffer (make-array 4096 :element-type '(unsigned-byte 8)))
+                     (total 0))
+                 (declare (dynamic-extent buffer))
+                 (with-open-file (output target :direction :output
+                                                :element-type '(unsigned-byte 8)
+                                                :if-exists :supersede)
+                   (unwind-protect
+                        (loop for read = (read-sequence buffer input)
+                              until (= 0 read)
+                              do (write-sequence buffer output)
+                                 (incf total read))
+                     (when (/= total (file-size file))
+                       (cerror "Ignore the discrepancy." "File size not as expected!"))))))))
+      (cond ((not (probe-file target))
+             (ecase if-does-not-exist
+               (:create
+                (download))
+               (:error
+                (error "Download does not exist."))
+               ((NIL)
+                NIL)))
+            (T
+             (ecase if-exists
+               (:supersede
+                (if (< (file-write-date target) (date-added file))
+                    (download)
+                    target))
+               (:overwrite
+                (download))
+               (:return
+                 target)
+               ((NIL)
+                NIL)))))))
+
+(defmethod extract-modfile ((file modfile) target &key (if-no-cache :create)
+                                                       (if-exists :supersede))
+  (let ((cache (download-modfile file T :if-exists :supersede :if-does-not-exist if-no-cache)))
+    (when cache
+      (when (probe-file target)
+        (ecase if-exists
+          (:supersede
+           (delete-directory target))
+          (:overwrite)
+          (:error
+           (error "Target exists."))
+          ((NIL)
+           (return-from extract-modfile NIL))))
+      (ensure-directories-exist target)
+      (org.shirakumo.zippy:extract-zip cache target :if-exists :supersede))))
