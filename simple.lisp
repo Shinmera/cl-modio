@@ -67,7 +67,7 @@
   (or (cond (file-id (games/mods/files/get client (default-game-id client) mod-id file-id))
             (version (first (games/mods/files client (default-game-id client) mod-id :version version :sort `((date-added . :desc)) :end 1)))
             (T (first (games/mods/files client (default-game-id client) mod-id :sort `((date-added . :desc)) :end 1))))
-      (restart-case (error "Modfile is not present on remote.")
+      (restart-case (error 'modfile-not-found :endopint "games/mods/files")
         (use-latest ()
           :report "Use the latest modfile version instead."
           :test (lambda (c) (declare (ignore c)) (or file-id version))
@@ -100,7 +100,7 @@
             (:deactivate
              (setf (getf (rest entry) :active) NIL))
             (:error
-             (cerror "Ignore the extra mod" "Mod is not present on remote."))
+             (cerror "Ignore the extra mod" "Mod is present locally."))
             ((NIL))))))
     (write-local-modlist client local)))
 
@@ -138,6 +138,6 @@
                   (:deactivate
                    (setf (getf (rest entry) :active) NIL))
                   (:error
-                   (cerror "Ignore the missing mod" "The local mod is no longer on the remote!"))
+                   (cerror "Ignore the missing mod" 'modfile-not-found :endpoint "games/mods/files"))
                   ((NIL))))))))
     (write-local-modlist client local)))

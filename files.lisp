@@ -6,6 +6,25 @@
 
 (in-package #:org.shirakumo.fraf.modio)
 
+(define-condition modfile-error (error modio-condition)
+  ((modfile :initarg :modfile :reader modfile)
+   (target :initarg :target :reader target)))
+
+(define-condition download-corrupted (modfile-error)
+  ((file-size :initarg :file-size :reader file-size))
+  (:report (lambda (c s) (format s "Download of~%  ~a~%at~%  ~a~%was ~d bytes long, but expected ~d."
+                                 (modfile c) (target c) (file-size c) (file-size (modfile c))))))
+
+(define-condition target-does-not-exist (modfile-error)
+  ()
+  (:report (lambda (c s) (format s "The target for~%  ~a~%is not cached at~%  ~a"
+                                 (modfile c) (target c)))))
+
+(define-condition target-already-exists (modfile-error)
+  ()
+  (:report (lambda (c s) (format s "The target for~%  ~a~%already exists at~%  ~a"
+                                 (modfile c) (target c)))))
+
 (define-list-endpoint* (games/mods/files modfile "games/~a/mods/~a/files" game mod)
   (modfile :parameter :id :update id)
   (date-added :update unix-timestamp)
@@ -72,13 +91,15 @@
                               do (write-sequence buffer output)
                                  (incf total read))
                      (when (/= total (file-size file))
-                       (cerror "Ignore the discrepancy." "File size not as expected!"))))))))
+                       (cerror "Ignore the discrepancy" 'download-corrupted
+                               :modfile file :file-size total))))
+                 target))))
       (cond ((not (probe-file target))
              (ecase if-does-not-exist
                (:create
                 (download))
                (:error
-                (error "Download does not exist."))
+                (error 'target-does-not-exist :modfile file :target target))
                ((NIL)
                 NIL)))
             (T
@@ -89,6 +110,8 @@
                     target))
                (:overwrite
                 (download))
+               (:error
+                (error 'target-already-exists :modfile file :target target))
                (:return
                  target)
                ((NIL)
@@ -104,7 +127,7 @@
            (delete-directory target))
           (:overwrite)
           (:error
-           (error "Target exists."))
+           (error 'target-already-exists :modfile file :target target))
           ((NIL)
            (return-from extract-modfile NIL))))
       (ensure-directories-exist target)
