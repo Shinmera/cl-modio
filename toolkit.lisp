@@ -25,7 +25,7 @@
   (cond (*portal*
          *portal*)
         ((and (find-package '#:org.shirakumo.fraf.steamworks)
-              (funcall (find-symbol '#:steamworks-available-p '#:org.shirakumo.fraf.steamworks)))
+              (funcall (find-symbol (string '#:steamworks-available-p) '#:org.shirakumo.fraf.steamworks)))
          :steam)))
 
 (defun universal-timestamp (unix-time)
@@ -75,6 +75,17 @@
   (make-pathname :name name
                  :type type
                  :defaults (tempdir)))
+
+(defun delete-directory (directory)
+  #+sbcl (sb-ext:delete-directory directory :recursive T)
+  #-sbcl (labels ((r (dir)
+                    (dolist (file (directory (merge-pathnames (make-pathname :name :wild :type :wild :directory '(:relative :wild))
+                                                              dir)))
+                      (if (or (pathname-type file) (pathname-name file))
+                          (delete-file file)
+                          (r file)))
+                    (delete-file dir)))
+           (r directory)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun unlist (listish)

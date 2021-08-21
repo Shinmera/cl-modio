@@ -47,16 +47,16 @@
 (defmethod get-listing ((cache cache) query)
   (gethash query (cache-lists cache)))
 
-(defmethod games/get ((cache cache) (id integer))
+(defmethod games/get ((cache cache) (id integer) &key)
   (gethash id (cache-objects cache)))
 
-(defmethod games/mods/get ((cache cache) game (id integer))
+(defmethod games/mods/get ((cache cache) game (id integer) &key)
   (gethash id (cache-objects cache)))
 
-(defmethod games/mods/comments/get ((cache cache) game mod (id integer))
+(defmethod games/mods/comments/get ((cache cache) game mod (id integer) &key)
   (gethash id (cache-objects cache)))
 
-(defmethod games/mods/files/get ((cache cache) game mod (id integer))
+(defmethod games/mods/files/get ((cache cache) game mod (id integer) &key)
   (gethash id (cache-objects cache)))
 
 ;;; Client integration

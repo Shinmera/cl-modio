@@ -207,7 +207,7 @@
         (list "_sort" (ecase order
                         (:asc (process-parameter-value sort))
                         (:desc (format NIL "-~a" (process-parameter-value sort))))))
-      (list "_sort" (prcoess-parameter-value sort))))
+      (list "_sort" (process-parameter-value sort))))
 
 (defmethod request ((client client) endpoint &key on-rate-limit parameters (method :get) (parse T))
   (when (wait-until client)
@@ -289,7 +289,7 @@
                   ;; KLUDGE: we could only achieve a cleaner cache integration interface
                   ;;         if we cached the raw data payload instead, which is not great.
                   (multiple-value-bind (cache cache-hit) (get-listing client query)
-                    (unless cache-hit
+                    (when (or (null cache-hit) ignore-cache)
                       (let ((results (request-list client endpoint
                                                    :on-rate-limit on-rate-limit
                                                    :collect-results collect-results
