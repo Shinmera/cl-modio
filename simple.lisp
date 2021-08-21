@@ -35,10 +35,11 @@
 (defmethod write-local-modlist ((client simple-client) modlist)
   (with-open-file (stream (modlist-file client) :direction :output :if-exists :supersede)
     (with-standard-io-syntax
-      (format stream ";;; mod.io modlist")
-      (dolist (entry modlist modlist)
-        (terpri stream)
-        (write entry :stream stream)))))
+      (let ((*print-case* :downcase))
+        (format stream ";;; mod.io modlist")
+        (dolist (entry modlist modlist)
+          (terpri stream)
+          (write entry :stream stream))))))
 
 (defmethod load-remote-modlist ((client simple-client))
   (loop for mod in (me/subscribed client :game (default-game-id client))
