@@ -127,12 +127,12 @@
   (id
    game-id
    (status :key id-status)
-   (visibility :key id-visibility)
+   (visible :key id-visibility)
    (submitted-by :nest user)
    (date-added :key universal-timestamp)
    (date-updated :key universal-timestamp)
    (date-live :key universal-timestamp)
-   (maturity :parameter "maturity_options" :key id-maturity-options)
+   (maturity :parameter "maturity_option" :key id-maturity-options)
    (logo :nest image)
    homepage-url
    name
@@ -140,6 +140,7 @@
    summary
    (description :parameter "description_plaintext")
    (description-html :parameter "description")
+   (modfile :nest modfile)
    metadata-blob
    profile-url
    (media :nest mod-media)
@@ -179,10 +180,10 @@
    (date-scanned :key universal-timestamp)
    (virus-status :key id-virus-status)
    (virus-positive :key id-virus-positive)
-   virus-hash
-   file-size
-   (file-hash :key (lambda (k) (gethash "md5" k)))
-   file-name
+   (virus-hash :parameter "virustotal_hash")
+   (file-size :parameter "filesize")
+   (file-hash :parameter "filehash" :key (lambda (k) (gethash "md5" k)))
+   (file-name :parameter "filename")
    version
    changelog
    metadata-blob
