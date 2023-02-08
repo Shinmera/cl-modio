@@ -103,6 +103,13 @@
 (defmethod fill-object-from-data ((name symbol) data)
   (fill-object-from-data (make-instance name) data))
 
+(defmethod fill-object-from-data ((name symbol) (data cons))
+  (loop for inner in data
+        collect (fill-object-from-data name inner)))
+
+(defmethod fill-object-from-data ((name symbol) (data null))
+  ())
+
 (defmacro define-parsable-class (name superclasses slots &rest options)
   (labels ((compile-slot-definition (slot)
              (destructuring-bind (name &key (initarg (intern (string name) "KEYWORD"))
@@ -128,9 +135,10 @@
          ,(mapcar #'compile-slot-definition slots)
          ,@options)
 
-       (defmethod fill-object-from-data ((object ,name) data)
+       (defmethod fill-object-from-data ((object ,name) (data hash-table))
          ,@(loop for slot in slots
-                 collect `(setf (slot-value object ',(unlist slot)) ,(compile-slot-extractor slot)))))))
+                 collect `(setf (slot-value object ',(unlist slot)) ,(compile-slot-extractor slot)))
+         object))))
 
 (defmethod id ((id integer)) id)
 

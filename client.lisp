@@ -129,8 +129,8 @@
 
 (defmethod print-object ((client client) stream)
   (print-unreadable-object (client stream :type T)
-    (format stream "~:[UNAUTHENTICATED~;AUTHENTICATED~]~@[ UNTIL ~a~]~@[ RATE LIMITED FOR ~ds~]"
-            (api-key client)
+    (format stream "~a~:[ UNAUTHENTICATED~; AUTHENTICATED~]~@[ UNTIL ~a~]~@[ RATE LIMITED FOR ~ds~]"
+            (api-key client) (access-token client)
             (when (valid-until client) (format-time (valid-until client)))
             (when (wait-until client) (- (wait-until client) (get-universal-time))))))
 

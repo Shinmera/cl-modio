@@ -11,12 +11,15 @@
   (setf (valid-until client) (universal-timestamp (gethash "date_expires" data)))
   client)
 
-(define-endpoint authenticate/terms (service)
-  (let ((data (request :service service)))
+(define-endpoint authenticate/terms ()
+  (let ((data (request)))
     (values (gethash "plaintext" data) data)))
 
 (define-endpoint (authenticate/email-request "oauth/emailrequest" :post) (email)
   (fill-object-from-data 'message (request :email email)))
+
+(define-endpoint (authenticate/logout "oauth/logout" :post) ()
+  (request))
 
 (define-endpoint (authenticate/email-exchange "oauth/emailexchange" :post) (security-code &key (expires (expiry-timestamp)))
   (complete-authentication
@@ -29,6 +32,14 @@
    client
    (request :appdata app-data
             :email email
+            :date-expires (unix-timestamp expires)
+            :terms-agreed terms-agreed)))
+
+(define-endpoint (authenticate/epic "external/epicgamesauth" :post) (access-token &key email terms-agreed (expires (expiry-timestamp)))
+  (complete-authentication
+   client
+   (request :email email
+            :access-token access-token
             :date-expires (unix-timestamp expires)
             :terms-agreed terms-agreed)))
 
@@ -87,6 +98,14 @@
   (complete-authentication
    client
    (request :discord-token token
+            :email email
+            :date-expires (unix-timestamp expires)
+            :terms-agreed terms-agreed)))
+
+(define-endpoint (authenticate/openid "external/openid" :post) (id-token &key email terms-agreed (expires (expiry-timestamp)))
+  (complete-authentication
+   client
+   (request :id-token id-token
             :email email
             :date-expires (unix-timestamp expires)
             :terms-agreed terms-agreed)))

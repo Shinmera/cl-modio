@@ -12,8 +12,8 @@
 (define-print-method unique-resource "@~a" id)
 
 (defclass named-resource ()
-  ((name :accessor name)
-   (name-id :accessor name-id)))
+  ((name :initform NIL :accessor name)
+   (name-id :initform NIL :accessor name-id)))
 
 (define-print-method named-resource "~a" (or (name-id named-resource) (name named-resource)))
 
