@@ -71,7 +71,7 @@
   active
   metadata-blob)
 
-(define-edit-endpoint :delete (games/mods/files/edit NIL "games/~a/mods/~a/files/~a" game mod file))
+(define-edit-endpoint :delete (games/mods/files/delete NIL "games/~a/mods/~a/files/~a" game mod file))
 
 (defmethod download-modfile ((file modfile) target &key (if-exists :supersede)
                                                         (if-does-not-exist :create))

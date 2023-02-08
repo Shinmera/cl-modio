@@ -15,11 +15,11 @@
   (let ((data (request)))
     (values (gethash "plaintext" data) data)))
 
-(define-endpoint (authenticate/email-request "oauth/emailrequest" :post) (email)
-  (fill-object-from-data 'message (request :email email)))
-
 (define-endpoint (authenticate/logout "oauth/logout" :post) ()
   (request))
+
+(define-endpoint (authenticate/email-request "oauth/emailrequest" :post) (email)
+  (fill-object-from-data 'message (request :email email)))
 
 (define-endpoint (authenticate/email-exchange "oauth/emailexchange" :post) (security-code &key (expires (expiry-timestamp)))
   (complete-authentication
