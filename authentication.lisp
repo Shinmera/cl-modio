@@ -6,7 +6,7 @@
 
 (in-package #:org.shirakumo.fraf.modio)
 
-(defun complete-authentication (client data)
+(defmethod complete-authentication ((client client) data)
   (setf (access-token client) (gethash "access_token" data))
   (setf (valid-until client) (universal-timestamp (gethash "date_expires" data)))
   client)
