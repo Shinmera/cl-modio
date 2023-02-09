@@ -301,7 +301,7 @@
                   (list
                    `(find ,val ,key))
                   (T
-                   `(equal ,val key)))))
+                   `(equal ,val ,key)))))
 
 (defmacro f (expr)
   (flet ((wrap-inner (comp val)

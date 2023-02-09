@@ -11,7 +11,8 @@
   (:export
    #:*portal*
    #:detect-platform
-   #:detect-portal)
+   #:detect-portal
+   #:f)
   ;; client.lisp
   (:export
    #:*debug*

@@ -180,26 +180,28 @@
   (flet ((inner (filter)
            (ecase (first filter)
              (equal
-              (list* NIL (third filter) (second filter)))
+              (list NIL (third filter) (second filter)))
              (find
               (list "in" (third filter) (format NIL "~{~a~^,~}" (second filter))))
              (search
-              (list* "_q" (third filter) (second filter)))
+              (list "_q" NIL (second filter)))
              (equalp
-              (list* "lk" (third filter) (second filter))))))
+              (list "lk" (third filter) (second filter)))
+             (max
+              (list "max" (third filter) (second filter)))
+             (min
+              (list "min" (third filter) (second filter)))
+             (logand
+              (list "bitwise-and" (third filter) (second filter))))))
     (case (first filter)
-      (max
-       (list* "max" (third filter) (second filter)))
-      (min
-       (list* "min" (third filter) (second filter)))
-      (logand
-       (list* "bitwise-and" (third filter) (second filter)))
       (not
        (destructuring-bind (match key val) (inner (second filter))
          (list (format NIL "~a-not~@[-~a~]" (when key (to-parameter-name key)) match) val)))
       (T
        (destructuring-bind (match key val) (inner filter)
-         (list (format NIL "~a~@[-~a~]" (when key (to-parameter-name key)) match) val))))))
+         (if key
+             (list (format NIL "~a~@[-~a~]" (to-parameter-name key) match) val)
+             (list match val)))))))
 
 (defun process-sort (sort)
   (if (listp sort)
