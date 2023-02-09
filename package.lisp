@@ -52,6 +52,7 @@
    #:on-rate-limit
    #:cache
    #:default-game-id
+   #:authenticated-p
    #:extract-user-properties
    #:restore-user-properties
    #:request

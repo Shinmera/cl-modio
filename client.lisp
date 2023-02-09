@@ -134,6 +134,10 @@
             (when (valid-until client) (format-time (valid-until client)))
             (when (wait-until client) (- (wait-until client) (get-universal-time))))))
 
+(defmethod authenticated-p ((client client))
+  (and (access-token client)
+       (< (get-universal-time) (valid-until client))))
+
 (defmethod make-load-form ((client client) &optional env)
   (declare (ignore env))
   `(make-instance ',(type-of client)
