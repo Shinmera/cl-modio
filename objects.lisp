@@ -20,7 +20,7 @@
 (define-parsable-class image ()
   (filename
    original
-   (thumnbails :parameter NIL :tabkey (50 "thumb_50x50"
+   (thumbnails :parameter NIL :tabkey (50 "thumb_50x50"
                                           64 "thumb_64x64"
                                           100 "thumb_100x100"
                                           128 "thumb_128x128"
