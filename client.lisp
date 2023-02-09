@@ -148,13 +148,15 @@
                   :default-game-id ,(default-game-id client)))
 
 (defmethod extract-user-properties ((client client))
-  (list (access-token client) (valid-until client) (language client)))
+  (list :access-token (access-token client)
+        :valid-until (valid-until client)
+        :language (language client)))
 
 (defmethod restore-user-properties ((client client) properties)
-  (destructuring-bind (access-token valid-until language) properties
-    (setf (access-token client) access-token)
-    (setf (valid-until client) valid-until)
-    (setf (language client) language)
+  (destructuring-bind (&key access-token valid-until language &allow-other-keys) properties
+    (when access-token (setf (access-token client) access-token))
+    (when valid-until (setf (valid-until client) valid-until))
+    (when language (setf (language client) language))
     client))
 
 (defun process-parameter-value (val)
