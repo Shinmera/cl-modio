@@ -78,7 +78,7 @@
   (let* ((download (download file))
          (target (merge-pathnames target (file-name file))))
     (flet ((download ()
-             (with-open-stream (input (request *client* (binary-url download) :parse NIL))
+             (with-open-stream (input (request *client* (binary-url download) :parse NIL :prepend-base NIL))
                (let ((buffer (make-array 4096 :element-type '(unsigned-byte 8)))
                      (total 0))
                  (declare (dynamic-extent buffer))

@@ -69,12 +69,12 @@
 (define-condition service-unavailable (request-error)
   ())
 
-(defun direct-request (endpoint &key (method :get) parameters headers (parse T))
+(defun direct-request (endpoint &key (method :get) parameters headers (parse T) (prepend-base T))
   (restart-case
       (multiple-value-bind (stream status headers)
           (let ((drakma:*header-stream* (if *debug* *error-output*)))
             (drakma:http-request
-             (format NIL "~a~a" *base-url* endpoint)
+             (if prepend-base (format NIL "~a~a" *base-url* endpoint) endpoint)
              :method method
              :want-stream T
              :external-format-in :utf-8
@@ -211,7 +211,7 @@
                         (:desc (format NIL "-~a" (process-parameter-value sort))))))
       (list "_sort" (process-parameter-value sort))))
 
-(defmethod request ((client client) endpoint &key on-rate-limit parameters (method :get) (parse T))
+(defmethod request ((client client) endpoint &key on-rate-limit parameters (method :get) (parse T) (prepend-base T))
   (when (wait-until client)
     (etypecase (or on-rate-limit (on-rate-limit client))
       ((eql :return)
@@ -235,7 +235,8 @@
                       :parameters (process-parameters
                                    (list* :api-key (api-key client)
                                           parameters))
-                      :parse parse)
+                      :parse parse
+                      :prepend-base prepend-base)
     (when retry-after
       (setf (wait-until client) (+ (get-universal-time) retry-after)))
     (values data location)))

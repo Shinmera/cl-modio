@@ -22,7 +22,7 @@
   homepage-url
   (modfile :update id)
   metadata-blob
-  metadata-kvp
+  (metadata :parameter :metadata-kvp)
   tags)
 
 (define-edit-endpoint :get (games/mods/get mod "games/~a/mods/~a" game mod))
