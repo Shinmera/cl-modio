@@ -271,9 +271,9 @@
 
 (defun extract-metadata (values)
   (let ((table (make-hash-table :test 'equal)))
-    (loop for value in values
-          do (setf (gethash (gethash "metakey" value) table)
-                   (gethash "metavalue" value)))))
+    (dolist (value values table)
+      (setf (gethash (gethash "metakey" value) table)
+            (gethash "metavalue" value)))))
 
 (defun tabkey (&rest parameters)
   (lambda (k)
