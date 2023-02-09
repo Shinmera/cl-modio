@@ -41,6 +41,7 @@
   tags)
 
 (define-edit-endpoint :put (games/mods/edit mod "games/~a/mods/~a" game mod)
+  logo
   (status :update status-id)
   (visibility :parameter :visible :update visibility-id)
   name
