@@ -72,7 +72,7 @@
 (defun direct-request (endpoint &key (method :get) parameters headers (parse T) (prepend-base T))
   (restart-case
       (multiple-value-bind (stream status headers)
-          (let ((drakma:*header-stream* (if *debug* *error-output*)))
+          (let ((drakma:*header-stream* (if *debug* *debug-io*)))
             (drakma:http-request
              (if prepend-base (format NIL "~a~a" *base-url* endpoint) endpoint)
              :method method
@@ -83,6 +83,7 @@
              :additional-headers headers))
         (flet ((handle-error (type)
                  (let ((data (ignore-errors (yason:parse stream))))
+                   (when *debug* (yason:encode data *debug-io*))
                    (error type :endpoint endpoint
                                :arguments parameters
                                :error-code (if data (gethash "error_ref" data) status)
@@ -93,7 +94,9 @@
                             T)
                            (parse
                             (unwind-protect
-                                 (yason:parse stream)
+                                 (let ((data (yason:parse stream)))
+                                   (when *debug* (yason:encode data *debug-io*))
+                                   data)
                               (close stream)))
                            (T
                             stream))
