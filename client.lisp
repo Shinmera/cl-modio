@@ -14,7 +14,8 @@
   ())
 
 (define-condition request-error (error modio-condition)
-  ((endpoint :initarg :endpoint :initform (error "ENDPOINT required.") :reader endpoint)
+  ((data :initarg :data :initform NIL :reader data)
+   (endpoint :initarg :endpoint :initform (error "ENDPOINT required.") :reader endpoint)
    (arguments :initarg :arguments :initform () :reader arguments)
    (error-code :initarg :error-code :initform NIL :reader error-code)
    (message :initarg :message :initform NIL :reader message))
@@ -84,11 +85,15 @@
         (flet ((handle-error (type)
                  (let ((data (ignore-errors (yason:parse stream))))
                    (when *debug* (yason:encode data *debug-io*))
-                   (let ((data (gethash "error" data data)))
-                     (error type :endpoint endpoint
+                   (let ((error (gethash "error" data data)))
+                     (error type :data data
+                                 :endpoint endpoint
                                  :arguments parameters
-                                 :error-code (if data (gethash "error_ref" data) status)
-                                 :message (when data (gethash "message" data)))))))
+                                 :error-code (if error (gethash "error_ref" error) status)
+                                 :message (format NIL "~a~{~%  ~a: ~a~}" (gethash "message" error)
+                                                  (loop for key being the hash-keys of (gethash "errors" error (make-hash-table))
+                                                        using (hash-value value)
+                                                        collect key collect value)))))))
           (case status
             ((200 201 204)
              (values (cond ((= 204 status)
