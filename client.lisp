@@ -236,7 +236,8 @@
                       :method method
                       :headers (process-headers
                                 (list :accept "application/json"
-                                      :authorization (access-token client)
+                                      :authorization (when (access-token client)
+                                                       (format NIL "Bearer ~a" (access-token client)))
                                       :accept-language (or (first (language-codes:codes (language client)))
                                                            (language client))
                                       :x-modio-platform (platform client)
