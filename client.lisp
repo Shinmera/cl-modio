@@ -84,10 +84,11 @@
         (flet ((handle-error (type)
                  (let ((data (ignore-errors (yason:parse stream))))
                    (when *debug* (yason:encode data *debug-io*))
-                   (error type :endpoint endpoint
-                               :arguments parameters
-                               :error-code (if data (gethash "error_ref" data) status)
-                               :message (when data (gethash "message" data))))))
+                   (let ((data (gethash "error" data data)))
+                     (error type :endpoint endpoint
+                                 :arguments parameters
+                                 :error-code (if data (gethash "error_ref" data) status)
+                                 :message (when data (gethash "message" data)))))))
           (case status
             ((200 201 204)
              (values (cond ((= 204 status)
