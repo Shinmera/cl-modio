@@ -248,9 +248,8 @@
                                                            (language client))
                                       :x-modio-platform (platform client)
                                       :x-modio-portal (portal client)
-                                      :content-type (if (some #'pathnamep parameters)
-                                                        "multipart/form-data"
-                                                        "application/x-www-form-urlencoded")))
+                                      :content-type (unless (some #'pathnamep parameters)
+                                                      "application/x-www-form-urlencoded")))
                       :parameters (process-parameters
                                    (list* :api-key (api-key client)
                                           parameters))
