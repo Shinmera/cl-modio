@@ -51,7 +51,18 @@ If *portal* is not NIL, returns *portal*. Otherwise if
 cl-steamworks is loaded and available, :steam is returned.
 Otherwise NIL is returned.
 
-See *PORTAL*"))
+See *PORTAL*")
+
+  (function f
+    "Construct a filter from the given filtering expression.
+
+EXPR      ::= NOT | SEARCH | BASIC
+NOT       ::= (not SEARCH | BASIC)
+SEARCH    ::= (search query)
+BASIC     ::= (FILTER comparison PARAMETER)
+FILTER    ::= equal | find | equalp | max | min | logand
+PARAMETER --- The name of an API parameter.
+"))
 
 ;; client.lisp
 (docs:define-docs
@@ -292,6 +303,11 @@ See CLIENT (type)")
     "Accesses the default ID of the game you want to interact with.
 
 See CLIENT (type)")
+
+  (function authenticated-p
+    "Returns true if the client is authenticated and the authentication token is still valid.
+
+See CLIENT (type)")
   
   (function extract-user-properties
     "Returns a form that can be serialised to persist the client's current settings.
@@ -333,14 +349,9 @@ arguments are available:
   :SORT      --- By which attribute to sort the request. Can also be a
                  list of attribute and :ASC or :DESC to change direction.
   :FILTER    --- May be a list of filtering expressions to limit the results.
-                 Each filter should be a list of the following format:
-    FILTER    ::= NOT | SEARCH | BASIC
-    NOT       ::= (not SEARCH | BASIC)
-    SEARCH    ::= (search query)
-    BASIC     ::= (OP comparison PARAMETER)
-    OP        ::= equal | find | equalp | max | min | logand
-    PARAMETER --- The name of an API parameter.
+                 Use the F macro to construct a filter.
 
+See F
 See CLIENT (type)"))
 
 ;; objects.lisp
@@ -410,7 +421,7 @@ See GAME-RESOURCE (type)")
 See GAME (type)
 See GAME-RESOURCE (type)")
 
-  (function user-resource
+  (type user-resource
     "Base class for any object that is a child of a user.
 
 See USER-ID")
@@ -1001,6 +1012,12 @@ See MODFILE (type)")
     "Accesses the changelog of the mod payload.
 
 See MODFILE (type)")
+
+  (function download
+    "Accesses the download object of the modfile.
+
+See MODFILE (type)
+See DOWNLOAD (type)")
   
   (type rating
     "Representation of a rating on a game or mod.
