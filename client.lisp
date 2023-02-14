@@ -289,13 +289,17 @@
   (unless (find '&key args)
     (setf args (append args '(&key))))
   (destructuring-bind (name &optional (endpoint name) (method :get)) (if (listp name) name (list name))
-    `(defmethod ,name ((client client) ,@args on-rate-limit)
-       (flet ((request (&rest parameters)
-                (request client ,(if (listp endpoint) endpoint (string-downcase endpoint))
-                         :on-rate-limit on-rate-limit
-                         :method ,method
-                         :parameters parameters)))
-         ,@body))))
+    (let ((reqargs (loop for arg in args until (find arg lambda-list-keywords) collect arg)))
+      `(progn (defmethod ,name ((client client) ,@args on-rate-limit)
+                (flet ((request (&rest parameters)
+                         (request client ,(if (listp endpoint) endpoint (string-downcase endpoint))
+                                  :on-rate-limit on-rate-limit
+                                  :method ,method
+                                  :parameters parameters)))
+                  ,@body))
+
+              (defmethod ,name ((default (eql T)) ,@reqargs &rest args)
+                (apply #',name *client* ,@reqargs args))))))
 
 (defmacro define-list-endpoint (name args &body body)
   (unless (find '&key args)
