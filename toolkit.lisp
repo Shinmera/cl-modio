@@ -136,8 +136,9 @@
          ,@options)
 
        (defmethod fill-object-from-data ((object ,name) (data hash-table))
-         ,@(loop for slot in slots
-                 collect `(setf (slot-value object ',(unlist slot)) ,(compile-slot-extractor slot)))
+         (when (< 0 (hash-table-count data))
+           ,@(loop for slot in slots
+                   collect `(setf (slot-value object ',(unlist slot)) ,(compile-slot-extractor slot))))
          object))))
 
 (defmethod id ((id integer)) id)
