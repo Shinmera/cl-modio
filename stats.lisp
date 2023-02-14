@@ -15,6 +15,6 @@
   (positive-ratings :parameter :ratings-positive)
   (negative-ratings :parameter :ratings-negative))
 
-(define-list-endpoint* (games/mods/stats mod-stats "games/~a/mods/~a/stats" game mod))
+(define-edit-endpoint :get (games/mods/stats mod-stats "games/~a/mods/~a/stats" game mod))
 
-(define-list-endpoint* (games/stats game-stats "games/~a/stats" game))
+(define-edit-endpoint :get (games/stats game-stats "games/~a/stats" game))

@@ -17,8 +17,23 @@
 
 (define-print-method named-resource "~a" (or (name-id named-resource) (name named-resource)))
 
+(defclass mod-resource ()
+  ((mod-id :accessor mod-id)))
+
+(defmethod mod ((thing mod-resource))
+  (games/mods/get *client* (default-game-id *client*) (mod-id thing)))
+
+(defclass game-resource ()
+  ((game-id :accessor game-id)))
+
+(defmethod game ((thing game-resource))
+  (games/get *client* (game-id thing)))
+
+(defclass user-resource ()
+  ((user-id :accessor user-id)))
+
 (define-parsable-class image ()
-  (filename
+  ((file-name :parameter "filename")
    original
    (thumbnails :parameter NIL :tabkey (50 "thumb_50x50"
                                           64 "thumb_64x64"
@@ -29,7 +44,7 @@
                                           640 "thumb_640x360"
                                           1280 "thumb_1280x720"))))
 
-(define-parsable-class comment (unique-resource)
+(define-parsable-class comment (unique-resource mod-resource)
   (id
    mod-id
    (user :nest user)
@@ -38,9 +53,6 @@
    thread-position
    karma
    content))
-
-(defmethod mod ((thing comment))
-  (games/mods/get *client* (default-game-id *client*) (mod-id thing)))
 
 (defmethod reply ((thing comment))
   (when (reply-id thing)
@@ -77,7 +89,10 @@
    (stats :nest game-stats)
    (tag-options :nest game-tag-option)))
 
-(define-parsable-class game-stats ()
+(defmethod user ((game game))
+  (general/ownership *client* :game (id game)))
+
+(define-parsable-class game-stats (game-resource)
   (game-id
    (mods :parameter "mods_count_total")
    (downloads :parameter NIL :tabkey (:today "mods_downloads_today"
@@ -85,9 +100,6 @@
                                       :daily "mods_downloads_daily_average"))
    (subscribers :parameter "mods_subscribers_total")
    (date-expires :key universal-timestamp)))
-
-(defmethod game ((thing game-stats))
-  (games/get *client* (game-id thing)))
 
 (define-parsable-class game-tag-option (named-resource)
   (name
@@ -100,30 +112,24 @@
 (defmethod fill-object-from-data ((message (eql 'message)) data)
   (gethash "message" data))
 
-(define-parsable-class mod-dependency (named-resource)
+(define-parsable-class mod-dependency (named-resource mod-resource)
   (mod-id
    name
    (date-added :key universal-timestamp)))
 
-(defmethod mod ((thing mod-dependency))
-  (games/mods/get *client* (default-game-id *client*) (mod-id thing)))
-
-(define-parsable-class mod-event (unique-resource)
+(define-parsable-class mod-event (unique-resource mod-resource user-resource)
   (id
    mod-id
    user-id
    (date-added :key universal-timestamp)
    (event-type :key id-event-type)))
 
-(defmethod mod ((thing mod-event))
-  (games/mods/get *client* (default-game-id *client*) (mod-id thing)))
-
 (define-parsable-class mod-media ()
   ((youtube-urls :parameter "youtube")
    (sketchfab-urls :parameter "sketchfab")
    (images :nest image)))
 
-(define-parsable-class mod (named-resource unique-resource)
+(define-parsable-class mod (named-resource unique-resource game-resource)
   (id
    game-id
    (status :key id-status)
@@ -148,10 +154,10 @@
    (metadata :parameter "metadata_kvp" :key extract-metadata)
    (tags :nest mod-tag)))
 
-(defmethod game ((mod mod))
-  (games/get *client* (game-id mod)))
+(defmethod user ((mod mod))
+  (general/ownership *client* :mod (id mod)))
 
-(define-parsable-class mod-stats ()
+(define-parsable-class mod-stats (mod-resource)
   (mod-id
    (date-expires :key universal-timestamp)
    (popularity :parameter NIL :tabkey (:position "popularity_rank_position"
@@ -166,14 +172,11 @@
                                    :aggregate "ratings_weighted_aggregate"
                                    :text "ratings_display_text"))))
 
-(defmethod mod ((thing mod-stats))
-  (games/mods/get *client* (default-game-id *client*) (mod-id thing)))
-
 (define-parsable-class mod-tag (named-resource)
   (name
    (date-added :key universal-timestamp)))
 
-(define-parsable-class modfile (unique-resource)
+(define-parsable-class modfile (unique-resource mod-resource)
   (id
    mod-id
    (date-added :key universal-timestamp)
@@ -189,22 +192,16 @@
    metadata-blob
    (download :nest download)))
 
-(defmethod mod ((thing modfile))
-  (games/mods/get *client* (default-game-id *client*) (mod-id thing)))
+(defmethod user ((modfile modfile))
+  (general/ownership *client* :file (id modfile)))
 
-(define-parsable-class rating ()
+(define-parsable-class rating (mod-resource game-resource)
   (game-id
    mod-id
    (rating :key id-rating)
    (date-added :key universal-timestamp)))
 
-(defmethod game ((thing rating))
-  (games/get *client* (game-id thing)))
-
-(defmethod mod ((thing rating))
-  (games/mods/get *client* (default-game-id *client*) (mod-id thing)))
-
-(define-parsable-class team-member ()
+(define-parsable-class team-member (unique-resource)
   (id
    (user :nest user)
    (level :key id-level)
@@ -212,19 +209,13 @@
    (title :parameter "position")
    (invite :parameter "invite_pending" :key id-invite)))
 
-(define-parsable-class user-event (unique-resource)
+(define-parsable-class user-event (unique-resource mod-resource game-resource user-resource)
   (id
    game-id
    mod-id
    user-id
    (date-added :key universal-timestamp)
    (event-type :key id-event-type)))
-
-(defmethod game ((thing user-event))
-  (games/get *client* (game-id thing)))
-
-(defmethod mod ((thing user-event))
-  (games/mods/get *client* (default-game-id *client*) (mod-id thing)))
 
 (define-parsable-class user (named-resource unique-resource)
   (id

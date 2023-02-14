@@ -20,6 +20,7 @@
    #:*base-url*
    #:modio-condition
    #:request-error
+   #:data
    #:endpoint
    #:arguments
    #:error-code
@@ -64,8 +65,15 @@
    #:named-resource
    #:name
    #:name-id
+   #:mod-resource
+   #:mod-id
+   #:mod
+   #:game-resource
+   #:game-id
+   #:game
+   #:user-resource
+   #:user-id
    #:image
-   #:filename
    #:original
    #:thumbnails
    #:comment
@@ -211,6 +219,7 @@
    #:clear-cache)
   ;; authentication.lisp
   (:export
+   #:complete-authentication
    #:authenticate/terms
    #:authenticate/logout
    #:authenticate/email-request

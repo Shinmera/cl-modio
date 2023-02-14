@@ -16,7 +16,8 @@
     (values (gethash "plaintext" data) data)))
 
 (define-endpoint (authenticate/logout "oauth/logout" :post) ()
-  (request))
+  (request)
+  (setf (access-token client) NIL))
 
 (define-endpoint (authenticate/email-request "oauth/emailrequest" :post) (email)
   (fill-object-from-data 'message (request :email email)))
