@@ -83,8 +83,8 @@
              :parameters parameters
              :additional-headers headers))
         (flet ((handle-error (type)
-                 (let ((data (ignore-errors (yason:parse stream))))
-                   (when *debug* (yason:encode data *debug-io*))
+                 (let ((data (ignore-errors (com.inuoe.jzon:parse stream))))
+                   (when *debug* (com.inuoe.jzon:stringify data :stream *debug-io* :pretty T))
                    (let ((error (gethash "error" data data)))
                      (error type :data data
                                  :endpoint endpoint
@@ -100,8 +100,8 @@
                             T)
                            (parse
                             (unwind-protect
-                                 (let ((data (yason:parse stream)))
-                                   (when *debug* (yason:encode data *debug-io*))
+                                 (let ((data (com.inuoe.jzon:parse stream)))
+                                   (when *debug* (com.inuoe.jzon:stringify data :stream *debug-io* :pretty T))
                                    data)
                               (close stream)))
                            (T
@@ -279,8 +279,8 @@
                 for data = (request client endpoint :on-rate-limit on-rate-limit :parameters (list* "_offset" start parameters))
                 do (setf end (min end (gethash "result_total" data)))
                    (setf start (+ start (gethash "result_count" data)))
-                   (dolist (result (gethash "data" data))
-                     (funcall on-results result))
+                   (loop for result across (gethash "data" data)
+                         do (funcall on-results result))
                 finally (return (nreverse results)))
         (new-value (value)
           value)))))

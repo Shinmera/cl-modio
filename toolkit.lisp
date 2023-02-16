@@ -107,6 +107,10 @@
   (loop for inner in data
         collect (fill-object-from-data name inner)))
 
+(defmethod fill-object-from-data ((name symbol) (data vector))
+  (loop for inner across data
+        collect (fill-object-from-data name inner)))
+
 (defmethod fill-object-from-data ((name symbol) (data null))
   ())
 
@@ -272,9 +276,10 @@
 
 (defun extract-metadata (values)
   (let ((table (make-hash-table :test 'equal)))
-    (dolist (value values table)
-      (setf (gethash (gethash "metakey" value) table)
-            (gethash "metavalue" value)))))
+    (loop for value across values
+          do (setf (gethash (gethash "metakey" value) table)
+                   (gethash "metavalue" value)))
+    table))
 
 (defun tabkey (&rest parameters)
   (lambda (k)

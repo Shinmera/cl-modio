@@ -39,7 +39,7 @@
   :depends-on (:alexandria
                :uiop
                :zippy
-               :yason
+               :com.inuoe.jzon
                :cl-ppcre
                :drakma
                :documentation-utils
