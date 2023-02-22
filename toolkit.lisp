@@ -203,9 +203,9 @@
   (:flagged 1))
 
 (define-id-map rating
-  ((:good :positive) +1)
-  ((:none NIL) 0)
-  ((:bad :negative) -1))
+  ((:good :positive 1) +1)
+  ((:none NIL 0) 0)
+  ((:bad :negative -1) -1))
 
 (define-id-map event-type
   (:join "USER_TEAM_JOIN")

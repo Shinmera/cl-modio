@@ -17,7 +17,8 @@
 
 (define-endpoint (authenticate/logout "oauth/logout" :post) ()
   (request)
-  (setf (access-token client) NIL))
+  (setf (access-token client) NIL)
+  (setf (valid-until client) (get-universal-time)))
 
 (define-endpoint (authenticate/email-request "oauth/emailrequest" :post) (email)
   (fill-object-from-data 'message (request :email email)))
