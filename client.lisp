@@ -168,7 +168,7 @@
     (when language (setf (language client) language))
     client))
 
-(defun process-parameter-value (val)
+(defun process-parameter-value (val &optional array)
   (etypecase val
     (string val)
     (pathname val)
@@ -179,7 +179,9 @@
     (symbol (string-downcase val))
     (ratio (princ-to-string (float val)))
     (real (princ-to-string val))
-    (list (format NIL "~{~a~^,~}" val))))
+    (list (if array
+              (mapcar #'process-parameter-value val)
+              (format NIL "~{~a~^,~}" val)))))
 
 (defun process-headers (parameters)
   (loop for (key val) on parameters by #'cddr
@@ -187,9 +189,16 @@
         collect (cons (string key) (process-parameter-value val))))
 
 (defun process-parameters (parameters)
-  (loop for (key val) on parameters by #'cddr
-        when val
-        collect (cons (to-parameter-name key) (process-parameter-value val))))
+  (let ((parts ()))
+    (loop for (key val) on parameters by #'cddr
+          for parameter = (to-parameter-name key)
+          do (cond ((null val))
+                   ((string= "[]" parameter :start2 (- (length parameter) 2))
+                    (dolist (value (process-parameter-value val T))
+                      (push (cons parameter value) parts)))
+                   (T
+                    (push (cons parameter (process-parameter-value val)) parts))))
+    (nreverse parts)))
 
 (defun process-filter (filter)
   (flet ((inner (filter)
