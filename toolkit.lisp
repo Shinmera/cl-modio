@@ -114,6 +114,11 @@
 (defmethod fill-object-from-data ((name symbol) (data null))
   ())
 
+(defun or* (&rest args)
+  (loop for arg in args
+        when (and arg (not (eql 'null arg)))
+        return arg))
+
 (defmacro define-parsable-class (name superclasses slots &rest options)
   (labels ((compile-slot-definition (slot)
              (destructuring-bind (name &key (initarg (intern (string name) "KEYWORD"))
@@ -129,7 +134,7 @@
                                             nest
                                             &allow-other-keys)
                  (enlist slot)
-               (let* ((form (if parameter `(gethash ,parameter data) 'data)))
+               (let* ((form (if parameter `(or* (gethash ,parameter data)) 'data)))
                  (when key (setf form `(,key ,form)))
                  (when tabkey (setf form `(funcall (tabkey ,@tabkey) ,form)))
                  (when nest (setf form `(fill-object-from-data ',nest ,form)))
