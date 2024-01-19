@@ -2,10 +2,10 @@
 This is a client library to interact with the "mod.io"(https://mod.io) platform to manage "mods" or extensions for games and other applications. It covers the full v1 API and includes convenience methods to make interacting with the API as well as syncing mods and so on easy.
 
 ## How To
-Before you can get started you must register an account on mod.io and create your game. Navigate to its admin page, and select the ``API KEY`` category. Copy the key out and create a new ``client`` instance with it:
+Before you can get started you must register an account on mod.io and create your game. Navigate to its admin page, and select the ``API`` category. Copy the key and API path out and create a new ``client`` instance with them:
 
 :: common lisp
-(setf modio:*client* (make-instance 'modio:client :api-key "...."))
+(setf modio:*client* (make-instance 'modio:client :base-url "...." :api-key "...."))
 ::
 
 Most relevant API endpoints will be available without authentication, but anything that needs to edit, delete, or create new objects in the very least will require an authenticated client. Mod.io offers a multitude of authentication methods, depending on the platform you're connected to.

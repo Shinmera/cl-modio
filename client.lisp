@@ -120,6 +120,7 @@
 
 (defclass client ()
   ((api-key :initarg :api-key :initform NIL :accessor api-key)
+   (base-url :initarg :base-url :initform *base-url* :accessor base-url)
    (access-token :initarg :access-token :initform NIL :accessor access-token)
    (language :initarg :language :initform "English" :accessor language)
    (platform :initarg :platform :initform (detect-platform) :accessor platform)
@@ -145,6 +146,7 @@
   (declare (ignore env))
   `(make-instance ',(type-of client)
                   :api-key ,(api-key client)
+                  :base-url ,(base-url client)
                   :valid-until ,(valid-until client)
                   :access-token ,(access-token client)
                   :language ,(language client)
@@ -240,27 +242,28 @@
        (error 'too-many-requests :request (list* endpoint parameters)))
       ((or symbol function)
        (funcall on-rate-limit))))
-  (multiple-value-bind (data location retry-after)
-      (direct-request endpoint
-                      :method method
-                      :headers (process-headers
-                                (list :accept "application/json"
-                                      :authorization (when (access-token client)
-                                                       (format NIL "Bearer ~a" (access-token client)))
-                                      :accept-language (or (first (language-codes:codes (language client)))
-                                                           (language client))
-                                      :x-modio-platform (platform client)
-                                      :x-modio-portal (portal client)
-                                      :content-type (unless (some #'pathnamep parameters)
-                                                      "application/x-www-form-urlencoded")))
-                      :parameters (process-parameters
-                                   (list* :api-key (api-key client)
-                                          parameters))
-                      :parse parse
-                      :prepend-base prepend-base)
-    (when retry-after
-      (setf (wait-until client) (+ (get-universal-time) retry-after)))
-    (values data location)))
+  (let ((*base-url* (base-url client)))
+    (multiple-value-bind (data location retry-after)
+        (direct-request endpoint
+                        :method method
+                        :headers (process-headers
+                                  (list :accept "application/json"
+                                        :authorization (when (access-token client)
+                                                         (format NIL "Bearer ~a" (access-token client)))
+                                        :accept-language (or (first (language-codes:codes (language client)))
+                                                             (language client))
+                                        :x-modio-platform (platform client)
+                                        :x-modio-portal (portal client)
+                                        :content-type (unless (some #'pathnamep parameters)
+                                                        "application/x-www-form-urlencoded")))
+                        :parameters (process-parameters
+                                     (list* :api-key (api-key client)
+                                            parameters))
+                        :parse parse
+                        :prepend-base prepend-base)
+      (when retry-after
+        (setf (wait-until client) (+ (get-universal-time) retry-after)))
+      (values data location))))
 
 (defmethod request-list ((client client) endpoint &key collect-results key on-rate-limit parameters start end per-page sort filter)
   (let ((parameters (list* "_limit" (or per-page 100)
