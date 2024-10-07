@@ -70,7 +70,7 @@
           (let ((drakma:*header-stream* (if *debug* *debug-io*)))
             (drakma:http-request
              (if prepend-base (format NIL "~a~a" *base-url* endpoint) endpoint)
-             :content-type (getf parameters :content-type "application/x-www-form-urlencoded")
+             :content-type (or (cdr (assoc :content-type parameters)) "application/x-www-form-urlencoded")
              :method method
              :want-stream T
              :external-format-in :utf-8
