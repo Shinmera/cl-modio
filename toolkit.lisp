@@ -50,17 +50,27 @@
              (T (char-downcase char)))))
     (map 'string #'key-char (string key))))
 
+(defun getenv (x)
+  #+(or abcl clasp clisp ecl xcl) (ext:getenv x)
+  #+allegro (sys:getenv x)
+  #+clozure (ccl:getenv x)
+  #+cmucl (unix:unix-getenv x)
+  #+lispworks (lispworks:environment-variable x)
+  #+sbcl (sb-ext:posix-getenv x)
+  #-(or abcl clasp clisp ecl xcl allegro clozure cmucl lispworks sbcl)
+  NIL)
+
 (defun tempdir ()
   (pathname
    (format NIL "~a/"
            #+windows
-           (or (uiop:getenv "TEMP")
+           (or (getenv "TEMP")
                "~/AppData/Local/Temp")
            #+darwin
-           (or (uiop:getenv "TMPDIR")
+           (or (getenv "TMPDIR")
                "/tmp")
            #+linux
-           (or (uiop:getenv "XDG_RUNTIME_DIR")
+           (or (getenv "XDG_RUNTIME_DIR")
                "/tmp")
            #-(or windows darwin linux)
            "/tmp")))
