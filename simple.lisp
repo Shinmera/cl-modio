@@ -142,13 +142,19 @@
 
 (defmethod determine-mod-properties ((client simple-client) target)
   (list (parse-integer (car (last (pathname-directory target))))
-        :version (let ((asd (first (directory (make-pathname :name :wild :type "asd" :defaults target))))
-                       (*package* (find-package "ASDF-USER")))
-                   (when asd
-                     (with-open-file (stream asd :direction :input)
-                       (loop for form = (read stream NIL '#1=#:eof)
-                             until (eq form '#1#)
-                             do (when (and (listp form) (eq (first form) 'asdf:defsystem))
-                                  (return (getf form :version)))))))))
+        :version (let ((meta (first (directory (make-pathname :name "meta" :type "lisp"
+                                                              :directory '(:relative :wild-inferiors)
+                                                              :defaults target)))))
+                   (when meta
+                     (ignore-errors
+                      (with-open-file (stream asd :direction :input)
+                        (loop for form = (read stream NIL '#1=#:eof)
+                              until (eq form '#1#)
+                              do (etypecase form
+                                   (cons
+                                    (let ((vers (position :version form)))
+                                      (when vers (return (elt form (1+ vers))))))
+                                   ((eql :version)
+                                    (return (read stream)))))))))))
 
 

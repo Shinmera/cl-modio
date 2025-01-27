@@ -1709,6 +1709,9 @@ After completing the sync, the local modlist is written.
 See SIMPLE-CLIENT (type)")
   
   (function determine-mod-properties
-    "Attempt to discover information about the mod by parsing any ASD files within.
+    "Attempt to discover information about the mod by parsing source files within.
+
+By default this will look for files named \"meta.lisp\" and search for a
+property keyed by a :version keyword within.
 
 See SIMPLE-CLIENT (type)"))
