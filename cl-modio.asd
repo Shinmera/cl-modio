@@ -4,7 +4,7 @@
   :author "Yukari Hafner <shinmera@tymoon.eu>"
   :maintainer "Yukari Hafner <shinmera@tymoon.eu>"
   :description "A client library for the mod.io API."
-  :homepage "https://github.com/Shinmera/cl-modio"
+  :homepage "https://shinmera.com/project/cl-modio"
   :serial T
   :components ((:file "package")
                (:file "toolkit")
